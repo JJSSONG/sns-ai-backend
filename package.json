@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    // Railway에서 주로 사용하는 start 스크립트를 다음과 같이 수정
+    "start": "node --max-old-space-size=4096 dist/main"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
