@@ -1,0 +1,24 @@
+// src/auth/auth.module.ts
+
+import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { UsersModule } from '../users/users.module'; // UsersService 사용을 위해 임포트
+import 'dotenv/config';
+
+@Module({
+  imports: [
+    UsersModule,
+    PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET, // .env에서 비밀 키 사용
+      signOptions: { expiresIn: '60m' }, // 토큰 만료 시간 (예: 60분)
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService],
+  exports: [AuthService], // 필요한 경우 AuthService를 외부에 노출
+})
+export class AuthModule {}

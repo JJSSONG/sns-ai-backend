@@ -7,6 +7,8 @@ import { AppService } from './app.service';
 import { UploadsModule } from './uploads/uploads.module';
 import 'dotenv/config';
 import { PostsModule } from './posts/posts.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 const dbUri = process.env.DATABASE_URL;
 
@@ -18,7 +20,7 @@ if (!dbUri) {
   imports: [
     MongooseModule.forRoot(dbUri),
     UploadsModule, // Add '!' here
-    PostsModule, // PostsModule을 임포트합니다.
+    PostsModule, UsersModule, AuthModule, // PostsModule을 임포트합니다.
   ],
   controllers: [AppController],
   providers: [AppService],
