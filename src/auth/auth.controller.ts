@@ -1,10 +1,21 @@
 // src/auth/auth.controller.ts
 
-import { Controller, Post, Body, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { 
+  Controller, 
+  Post, 
+  Body, 
+  UseGuards, 
+  UnauthorizedException, 
+  Get, 
+  Req 
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto'; // 다음 단계에서 생성 예정
+import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+// import { Request } from 'express'; // Request 타입을 사용하기 위해 추가
+import type { Request } from 'express';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -33,6 +44,25 @@ export class AuthController {
       throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
 
+    return this.authService.login(user);
+  }
+
+  @Get('kakao')
+  @ApiOperation({ summary: '카카오 로그인 시작' })
+  @UseGuards(AuthGuard('kakao')) // 'kakao' 전략 사용
+  async kakaoLogin() {
+    // 이 메서드는 카카오 로그인 페이지로 리다이렉트만 담당합니다.
+    return;
+  }
+
+  @Get('kakao/callback')
+  @ApiOperation({ summary: '카카오 로그인 콜백' })
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoLoginCallback(@Req() req: Request) {
+    // KakaoStrategy의 validate에서 반환된 user 정보가 req.user에 담겨 있습니다.
+    const user: any = req.user; 
+    
+    // 카카오 로그인이 성공하면 JWT 토큰을 발급하여 프론트엔드로 전달
     return this.authService.login(user);
   }
 }

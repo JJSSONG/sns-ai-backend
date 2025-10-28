@@ -1,18 +1,24 @@
-// src/posts/posts.module.ts
+// src/posts/posts.module.ts (수정)
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common'; // ✨ forwardRef 임포트
 import { MongooseModule } from '@nestjs/mongoose';
 import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { Post, PostSchema } from './schemas/post.schema';
-import { UploadsModule } from '../uploads/uploads.module';
+import { AuthModule } from '../auth/auth.module';
+import { Types } from 'mongoose';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-    UploadsModule, // UploadsModule을 임포트합니다.
+    // ✨ AuthModule에 forwardRef() 적용
+    forwardRef(() => AuthModule), 
   ],
   controllers: [PostsController],
-  providers: [PostsService], // PostsService를 프로바이더에 추가합니다.
+  providers: [PostsService],
+  // 만약 PostsService가 다른 모듈에서 사용된다면 exports에도 추가해야 합니다.
+  exports: [PostsService], 
 })
 export class PostsModule {}
+
+// 그리고 필요하다면 AuthModule에서도 PostsModule을 임포트하는 부분에 forwardRef()를 적용해야 합니다.

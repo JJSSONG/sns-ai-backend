@@ -12,6 +12,16 @@ async function bootstrap() {
     .setDescription('The API documentation for the SNS AI content creation solution')
     .setVersion('1.0')
     .addTag('posts')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+        description: 'JWT 토큰 (Bearer [token]) 입력',
+      },
+      'access-token', // 이 이름으로 토큰을 참조합니다.
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

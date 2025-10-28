@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module'; // UsersService 사용을 위해 임포트
 import 'dotenv/config';
+import { JwtStrategy } from './strategy/jwt.strategy';
+import { KakaoStrategy } from './strategy/kakao.strategy';
 
 @Module({
   imports: [
@@ -18,7 +20,11 @@ import 'dotenv/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
-  exports: [AuthService], // 필요한 경우 AuthService를 외부에 노출
+  providers: [
+    AuthService,
+    JwtStrategy, // JWT 전략 등록
+    KakaoStrategy, // 카카오 전략 등록
+  ],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

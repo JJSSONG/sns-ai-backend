@@ -1,80 +1,94 @@
 // src/posts/posts.controller.ts
 
-import {
-  Controller,
-  Post,
-  Body,
-  UploadedFile,
-  UseInterceptors,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
-  HttpException,
-  HttpStatus
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
-// import { Express } from 'express';
-import { diskStorage } from 'multer';
+import { Controller, Post, Get, Body, UseInterceptors, UploadedFiles, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { PostsService } from './posts.service';
-import { UploadsService } from '../uploads/uploads.service';
-import { Post as PostSchema } from './schemas/post.schema';
+import { CreatePostDto } from './dto/create-post.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard'; // JWT 가드 임포트
+import * as AWS from 'aws-sdk';
+import multerS3 from 'multer-s3';
+import { Types } from 'mongoose';
+import { S3Client } from '@aws-sdk/client-s3';
+
+// S3 설정 (배포 환경 변수를 사용하도록 설정)
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string, // 타입 단언 필요
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string, // 타입 단언 필요
+  },
+});
 
 @ApiTags('posts')
 @Controller('posts')
 export class PostsController {
-  constructor(
-    private readonly postsService: PostsService,
-    private readonly uploadsService: UploadsService,
-  ) {}
+  constructor(private postsService: PostsService) {}
 
-  @Post('create')
-  @ApiOperation({ summary: '이미지 업로드 및 AI 캡션 생성' })
-  @ApiConsumes('multipart/form-data')
+  // 1. 포스팅 생성 API (다중 파일 업로드 및 JWT 인증 필요)
+  @Post()
+  @UseGuards(JwtAuthGuard) // JWT 인증된 사용자만 접근 가능
+  @ApiBearerAuth() // Swagger에 JWT 토큰 입력 필드 표시
+  @ApiOperation({ summary: '새 포스팅 생성 및 AI 콘텐츠 추천' })
+  @ApiConsumes('multipart/form-data') // 파일 업로드 API임을 명시
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        text: { type: 'string', description: 'AI 캡션 생성에 사용할 텍스트' },
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: '업로드할 이미지 파일',
+        prompt: { type: 'string', description: '이미지 생성 프롬프트' },
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+          description: '업로드할 이미지 파일 (최대 5개)',
         },
       },
     },
   })
   @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
+    FilesInterceptor('files', 5, { // 'files' 필드명으로 최대 5개 파일 허용
+      storage: multerS3({
+        s3: s3,
+        bucket: process.env.AWS_S3_BUCKET_NAME as string, // 타입 단언 필요
+        acl: 'public-read', // 외부 접근 가능하도록 권한 설정
+        key: function (req, file, cb) {
+          const ext = file.mimetype.split('/')[1];
+          cb(null, `posts/${Date.now()}_${file.originalname}.${ext}`);
+        },
       }),
     }),
   )
-  async createPost(
-    @Body('text') text: string,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5MB 제한
-          new FileTypeValidator({ fileType: 'image/(jpeg|png|gif)' }), // jpeg, png, gif만 허용
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+  async create(
+    @UploadedFiles() files: Express.MulterS3.File[],
+    @Body() createPostDto: CreatePostDto,
+    @Req() req,
   ) {
-    // 1. 이미지 파일 S3에 업로드
-    const imageUrl = await this.uploadsService.uploadFile(file);
+    if (!files || files.length === 0) {
+        throw new Error("이미지 파일을 1개 이상 업로드해야 합니다.");
+    }
 
-    // 2. AI 캡션 생성
-    const caption = await this.postsService.generateCaption(text);
+    // req.user는 JwtStrategy에서 반환된 사용자 정보입니다.
+    const userId = new Types.ObjectId(req.user._id);
 
-    // 3. 데이터베이스에 게시물 저장
-    const newPost = await this.postsService.create(caption, imageUrl);
+    const post = await this.postsService.create(userId, files, createPostDto);
 
     return {
-      message: '게시물 생성 및 저장이 완료되었습니다.',
-      post: newPost,
+      message: '포스팅 및 AI 콘텐츠 생성이 완료되었습니다.',
+      post: {
+        imageUrls: post.imageUrls,
+        caption: post.caption,
+        hashtags: post.hashtags,
+        // ... 기타 필드
+      }
     };
+  }
+
+  // 2. 피드 목록 조회 API
+  @Get()
+  @ApiOperation({ summary: '전체 피드 목록 조회 (최신순)' })
+  async findAll() {
+    return this.postsService.findAll();
   }
 }

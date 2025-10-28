@@ -19,7 +19,7 @@ export class UsersService {
   // 2. 새로운 사용자 생성 (비밀번호 해시 적용)
   async create(createUserDto: CreateUserDto): Promise<User> {
     // 비밀번호 해시
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10); // 솔트 라운드 10
+    const hashedPassword = await bcrypt.hash(createUserDto.password as string, 10); // 솔트 라운드 10
 
     const newUser = new this.userModel({
       ...createUserDto,
