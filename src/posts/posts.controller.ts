@@ -52,7 +52,6 @@ export class PostsController {
       storage: multerS3({
         s3: s3,
         bucket: process.env.AWS_S3_BUCKET_NAME as string, // 타입 단언 필요
-        acl: 'public-read', // 외부 접근 가능하도록 권한 설정
         key: function (req, file, cb) {
           const ext = file.mimetype.split('/')[1];
           cb(null, `posts/${Date.now()}_${file.originalname}.${ext}`);
