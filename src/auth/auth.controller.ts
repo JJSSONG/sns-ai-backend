@@ -36,7 +36,7 @@ export class AuthController {
   @ApiBody({ type: LoginUserDto })
   async login(@Body() loginUserDto: LoginUserDto) {
     const user = await this.authService.validateUser(
-      loginUserDto.username,
+      loginUserDto.userId,
       loginUserDto.password,
     );
 

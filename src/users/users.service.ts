@@ -11,9 +11,9 @@ import { CreateUserDto } from './dto/create-user.dto'; // 다음 단계에서 �
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  // 1. 사용자 ID (username)로 사용자 찾기
-  async findByUsername(username: string): Promise<User | null> {
-    return this.userModel.findOne({ username }).exec();
+  // 1. 사용자 ID (userId)로 사용자 찾기
+  async findByUserId(userId: string): Promise<User | null> {
+    return this.userModel.findOne({ userId }).exec();
   }
 
   // 2. 새로운 사용자 생성 (비밀번호 해시 적용)

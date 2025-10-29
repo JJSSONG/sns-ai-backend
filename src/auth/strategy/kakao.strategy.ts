@@ -19,7 +19,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: Function) {
     const kakaoId = profile.id.toString();
-    const nickname = profile.displayName || profile._json.kakao_account.profile.nickname;
+    const username = profile.displayName || profile._json.kakao_account.profile.nickname;
 
     // 1. 카카오 ID로 사용자 찾기
     let user = await this.usersService.findByKakaoId(kakaoId);
@@ -27,9 +27,9 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     // 2. 사용자가 없다면 새로 생성 (최소 정보만 사용)
     if (!user) {
       user = await this.usersService.create({
-        username: `kakao_${kakaoId}`,
+        userId: `kakao_${kakaoId}`,
         password: Math.random().toString(36).substring(2, 15), // 임시 비밀번호
-        nickname: nickname,
+        username: username,
         kakaoId: kakaoId,
       });
     }

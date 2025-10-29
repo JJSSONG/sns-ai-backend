@@ -16,8 +16,8 @@ export class AuthService {
 
   // 1. 회원가입
   async register(createUserDto: CreateUserDto): Promise<User> {
-    // 이미 존재하는 사용자인지 확인 (username 중복 체크)
-    const userExists = await this.usersService.findByUsername(createUserDto.username);
+    // 이미 존재하는 사용자인지 확인 (userId 중복 체크)
+    const userExists = await this.usersService.findByUserId(createUserDto.userId);
     if (userExists) {
       throw new ConflictException('이미 존재하는 사용자 ID입니다.');
     }
@@ -27,9 +27,9 @@ export class AuthService {
   }
 
   // 2. 로그인 유효성 검증
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByUsername(username);
-    
+  async validateUser(userId: string, pass: string): Promise<any> {
+    const user = await this.usersService.findByUserId(userId);
+
     if (user) {
       // 비밀번호 해시 비교
       const isMatch = await bcrypt.compare(pass, user.password);
@@ -45,7 +45,7 @@ export class AuthService {
 
   // 3. JWT 토큰 발급
   async login(user: any) {
-    const payload = { username: user.username, sub: user._id };
+    const payload = { userId: user.userId, sub: user._id };
     return {
       access_token: this.jwtService.sign(payload),
     };

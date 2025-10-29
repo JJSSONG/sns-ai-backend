@@ -28,7 +28,7 @@ export class PostsController {
   // 1. 포스팅 생성 API (다중 파일 업로드 및 JWT 인증 필요)
   @Post()
   @UseGuards(JwtAuthGuard) // JWT 인증된 사용자만 접근 가능
-  @ApiBearerAuth() // Swagger에 JWT 토큰 입력 필드 표시
+  @ApiBearerAuth('access-token') // Swagger에 JWT 토큰 입력 필드 표시
   @ApiOperation({ summary: '새 포스팅 생성 및 AI 콘텐츠 추천' })
   @ApiConsumes('multipart/form-data') // 파일 업로드 API임을 명시
   @ApiBody({
@@ -87,8 +87,14 @@ export class PostsController {
 
   // 2. 피드 목록 조회 API
   @Get()
-  @ApiOperation({ summary: '전체 피드 목록 조회 (최신순)' })
-  async findAll() {
-    return this.postsService.findAll();
+  @UseGuards(JwtAuthGuard) // ✨ JWT 인증된 사용자만 접근 가능
+  @ApiBearerAuth('access-token') // Swagger에 JWT 토큰 입력 필드 표시
+  @ApiOperation({ summary: '본인이 작성한 피드 목록 조회' }) // ✨ 설명 변경
+  async findMyPosts(@Req() req) {
+    // JwtStrategy에서 검증 후 req.user에 담긴 사용자 ID (_id) 추출
+    const userId = req.user._id; 
+    
+    // 서비스의 새로운 메서드 호출
+    return this.postsService.findMyPosts(userId); 
   }
 }

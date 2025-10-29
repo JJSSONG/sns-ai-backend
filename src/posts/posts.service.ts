@@ -89,7 +89,16 @@ export class PostsService {
   async findAll(): Promise<Post[]> {
     return this.postModel
       .find()
-      .populate('userId', 'nickname') // 'User' 모델을 참조하여 닉네임 필드만 가져옴
+      .populate('userId', 'username') // 'User' 모델을 참조하여 닉네임 필드만 가져옴
+      .sort({ createdAt: -1 }) // 최신순 정렬
+      .exec();
+  }
+
+  // 4. 본인이 작성한 피드 목록 조회
+  async findMyPosts(userId: string): Promise<Post[]> {
+    return this.postModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .populate('userId', 'username') // 'User' 모델을 참조하여 닉네임 필드만 가져옴
       .sort({ createdAt: -1 }) // 최신순 정렬
       .exec();
   }

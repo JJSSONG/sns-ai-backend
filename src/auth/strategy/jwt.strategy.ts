@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     console.log('--- JWT Strategy - Validate Called ---');
     console.log('JWT Payload:', payload);
     // JWT Payload를 받아 DB에서 사용자 유효성 검증
-    const user = await this.usersService.findByUsername(payload.username); 
+    const user = await this.usersService.findByUserId(payload.userId);
 
     if (!user) {
       console.log('--- Auth Failed: User not found ---'); // 💥 사용자 조회 실패 로그
