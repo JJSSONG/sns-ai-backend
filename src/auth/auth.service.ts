@@ -31,7 +31,7 @@ export class AuthService {
     const user = await this.usersService.findByUserId(userId);
 
     if (user) {
-      // 비밀번호 해시 비교
+      // 비밀번호 해시 비교 
       const isMatch = await bcrypt.compare(pass, user.password);
       if (isMatch) {
         // 비밀번호가 일치하면 토큰 발급을 위해 비밀번호를 제외한 사용자 정보 반환
