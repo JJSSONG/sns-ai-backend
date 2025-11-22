@@ -16,7 +16,7 @@ export class User extends Document {
   @Prop({ required: true })
   username: string; // 사용자 이름/닉네임으로 사용
 
-  @Prop({ unique: true, sparse: true })
+  @Prop({ unique: true, sparse: true, required: false })
   kakaoId: string; // 카카오 로그인 ID
 }
 

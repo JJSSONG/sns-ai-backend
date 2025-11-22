@@ -10,7 +10,7 @@ async function bootstrap() {
   // ✨ CORS 설정 추가 및 로컬 포트 허용
   app.enableCors({
     // React 개발 서버 주소 명시
-    origin: ['http://localhost:3000', 'https://ssu-web-programming.vercel.app'], 
+    origin: ['http://localhost:3000', 'https://ssu-web-programming-1yel08o1j-ssu-ideation.vercel.app', 'https://ssu-web-programming-git-main-ssu-ideation.vercel.app'], 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // 허용할 HTTP 메서드
     credentials: true, // 인증 정보(쿠키, Authorization 헤더) 허용
   });
