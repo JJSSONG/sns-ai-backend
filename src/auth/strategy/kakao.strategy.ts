@@ -22,7 +22,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     const kakaoId = profile.id.toString();
     const username = profile.displayName || profile._json.kakao_account.profile.nickname;
     // 카카오 계정 이메일 추출 (정보 제공 동의 시)
-    const kakaoEmail = profile._json.kakao_account.email; 
+    const kakaoEmail = profile._json.kakao_account?.email;
 
     // 1. 카카오 ID로 사용자 찾기 (기존 소셜 로그인 사용자)
     let user = await this.usersService.findByKakaoId(kakaoId);
