@@ -7,6 +7,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ✨ CORS 설정 추가 및 로컬 포트 허용
+  app.enableCors({
+    // React 개발 서버 주소 명시
+    origin: ['http://localhost:3000', 'https://ssu-web-programming.vercel.app'], 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // 허용할 HTTP 메서드
+    credentials: true, // 인증 정보(쿠키, Authorization 헤더) 허용
+  });
+
   const config = new DocumentBuilder()
     .setTitle('SNS AI Solution API')
     .setDescription('The API documentation for the SNS AI content creation solution')
