@@ -56,7 +56,7 @@ export class AuthController {
     return;
   }
 
-  @Get('kakao/callback')
+  /* @Get('kakao/callback')
   @ApiOperation({ summary: '카카오 로그인 콜백' })
   @UseGuards(AuthGuard('kakao'))
   // @Res()를 사용하고, res: any로 Express 메서드 접근 권한을 확보합니다.
@@ -85,5 +85,16 @@ export class AuthController {
     const redirectUrl = process.env.FRONTEND_SUCCESS_URL || 'https://ssu-web-programming-git-main-ssu-ideation.vercel.app/'; 
     
     return res.redirect(redirectUrl); 
+  } */
+
+  @Get('kakao/callback')
+  @ApiOperation({ summary: '카카오 로그인 콜백' })
+  @UseGuards(AuthGuard('kakao'))
+  // ✨ @Res() 데코레이터를 제거하고, 일반적인 HTTP 응답을 반환합니다.
+  async kakaoLoginCallback(@Req() req: Request) { 
+    const user: any = req.user; 
+    
+    return this.authService.login(user); // ✨ JSON 응답을 반환하도록 수정
+    
   }
 }
