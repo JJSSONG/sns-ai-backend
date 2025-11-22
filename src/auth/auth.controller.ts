@@ -56,7 +56,7 @@ export class AuthController {
     return;
   }
 
-  /* @Get('kakao/callback')
+  @Get('kakao/callback')
   @ApiOperation({ summary: '카카오 로그인 콜백' })
   @UseGuards(AuthGuard('kakao'))
   // @Res()를 사용하고, res: any로 Express 메서드 접근 권한을 확보합니다.
@@ -67,27 +67,24 @@ export class AuthController {
     const tokenPayload = await this.authService.login(user);
     const accessToken = tokenPayload.access_token; 
 
-    // 2. ✨ [핵심 수정] process.env 객체에서 직접 URL 값을 가져옴
-    // NOTE: .env 파일이 NestJS 시작 시 로드되어 있어야 합니다. (dotenv/config 또는 ConfigModule 필수)
-    // const FRONTEND_SUCCESS_URL = process.env.FRONTEND_SUCCESS_URL;
+    // 2. 환경 변수에서 URL 값을 가져옵니다.
+    const FRONTEND_SUCCESS_URL = process.env.FRONTEND_SUCCESS_URL || 'https://ssu-web-programming-git-main-ssu-ideation.vercel.app/'; 
     
+    if (!FRONTEND_SUCCESS_URL) {
+        // 환경 변수 설정 누락 시 에러 처리 또는 기본 페이지로 리다이렉트
+        console.error('FRONTEND_SUCCESS_URL 환경 변수가 설정되지 않았습니다.');
+        // 필수 값 누락이므로, 에러 페이지로 리다이렉트합니다.
+        return res.redirect('http://localhost:3000/auth/error?msg=URL_MISSING'); 
+    }
     
-    // 3. 토큰을 HttpOnly 쿠키에 설정
-    res.cookie('access_token', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 3600000, 
-        sameSite: 'Lax',
-    });
+    // 3. ✨ [핵심] 토큰을 쿼리 파라미터에 담아 프론트엔드로 리다이렉트
+    // (예: https://.../auth/kakao-success?token=eyJhbGciOiJ...)
+    const redirectUrlWithToken = `${FRONTEND_SUCCESS_URL}?token=${accessToken}`;
     
-    // 4. 프론트엔드로 리다이렉션
-    // URL이 설정되지 않았다면 기본값으로 fallback (방어 코드)
-    const redirectUrl = process.env.FRONTEND_SUCCESS_URL || 'https://ssu-web-programming-git-main-ssu-ideation.vercel.app/'; 
-    
-    return res.redirect(redirectUrl); 
-  } */
+    return res.redirect(redirectUrlWithToken);
+  }
 
-  @Get('kakao/callback')
+  /* @Get('kakao/callback')
   @ApiOperation({ summary: '카카오 로그인 콜백' })
   @UseGuards(AuthGuard('kakao'))
   // ✨ @Res() 데코레이터를 제거하고, 일반적인 HTTP 응답을 반환합니다.
@@ -96,5 +93,6 @@ export class AuthController {
     
     return this.authService.login(user); // ✨ JSON 응답을 반환하도록 수정
     
-  }
+  } */
+  
 }
