@@ -7,7 +7,8 @@ import {
   UseGuards, 
   UnauthorizedException, 
   Get, 
-  Req 
+  Req,
+  Res
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -58,11 +59,30 @@ export class AuthController {
   @Get('kakao/callback')
   @ApiOperation({ summary: '카카오 로그인 콜백' })
   @UseGuards(AuthGuard('kakao'))
-  async kakaoLoginCallback(@Req() req: Request) {
-    // KakaoStrategy의 validate에서 반환된 user 정보가 req.user에 담겨 있습니다.
+  // @Res()를 사용하고, res: any로 Express 메서드 접근 권한을 확보합니다.
+  async kakaoLoginCallback(@Req() req: Request, @Res() res: any) { 
     const user: any = req.user; 
     
-    // 카카오 로그인이 성공하면 JWT 토큰을 발급하여 프론트엔드로 전달
-    return this.authService.login(user);
+    // 1. JWT 토큰 발급
+    const tokenPayload = await this.authService.login(user);
+    const accessToken = tokenPayload.access_token; 
+
+    // 2. ✨ [핵심 수정] process.env 객체에서 직접 URL 값을 가져옴
+    // NOTE: .env 파일이 NestJS 시작 시 로드되어 있어야 합니다. (dotenv/config 또는 ConfigModule 필수)
+    const FRONTEND_SUCCESS_URL = process.env.FRONTEND_SUCCESS_URL;
+    
+    // 3. 토큰을 HttpOnly 쿠키에 설정
+    res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 3600000, 
+        sameSite: 'Lax',
+    });
+    
+    // 4. 프론트엔드로 리다이렉션
+    // URL이 설정되지 않았다면 기본값으로 fallback (방어 코드)
+    const redirectUrl = FRONTEND_SUCCESS_URL || 'http://localhost:3000/'; 
+    
+    return res.redirect(redirectUrl); 
   }
 }

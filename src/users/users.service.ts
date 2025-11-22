@@ -2,7 +2,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto'; // 다음 단계에서 생성 예정
@@ -31,5 +31,14 @@ export class UsersService {
   // 3. 카카오 ID로 사용자 찾기 (카카오 로그인 시 필요)
   async findByKakaoId(kakaoId: string): Promise<User | null> {
     return this.userModel.findOne({ kakaoId }).exec();
+  }
+
+  // ✨ 4. 기존 사용자에게 kakaoId 업데이트 (연동 로직의 핵심)
+  async updateKakaoId(userId: Types.ObjectId, kakaoId: string): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+        userId, // Mongoose ObjectId로 사용자를 찾음
+        { kakaoId: kakaoId }, // kakaoId 필드 업데이트
+        { new: true } // 업데이트된 문서를 반환하도록 설정
+    ).exec();
   }
 }
