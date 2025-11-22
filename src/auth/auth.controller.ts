@@ -71,6 +71,7 @@ export class AuthController {
     // NOTE: .env 파일이 NestJS 시작 시 로드되어 있어야 합니다. (dotenv/config 또는 ConfigModule 필수)
     // const FRONTEND_SUCCESS_URL = process.env.FRONTEND_SUCCESS_URL;
     
+    
     // 3. 토큰을 HttpOnly 쿠키에 설정
     res.cookie('access_token', accessToken, {
         httpOnly: true,
@@ -81,7 +82,7 @@ export class AuthController {
     
     // 4. 프론트엔드로 리다이렉션
     // URL이 설정되지 않았다면 기본값으로 fallback (방어 코드)
-    const redirectUrl = process.env.FRONTEND_SUCCESS_URL || 'http://localhost:3000'; 
+    const redirectUrl = process.env.FRONTEND_SUCCESS_URL || 'https://ssu-web-programming-git-main-ssu-ideation.vercel.app/'; 
     
     return res.redirect(redirectUrl); 
   }
