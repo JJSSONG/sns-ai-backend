@@ -83,16 +83,5 @@ export class AuthController {
     
     return res.redirect(redirectUrlWithToken);
   }
-
-  /* @Get('kakao/callback')
-  @ApiOperation({ summary: '카카오 로그인 콜백' })
-  @UseGuards(AuthGuard('kakao'))
-  // ✨ @Res() 데코레이터를 제거하고, 일반적인 HTTP 응답을 반환합니다.
-  async kakaoLoginCallback(@Req() req: Request) { 
-    const user: any = req.user; 
-    
-    return this.authService.login(user); // ✨ JSON 응답을 반환하도록 수정
-    
-  } */
   
 }

@@ -1,6 +1,6 @@
 // src/posts/posts.controller.ts
 
-import { Controller, Post, Get, Body, UseInterceptors, UploadedFiles, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseInterceptors, UploadedFiles, UseGuards, Req, Delete, HttpCode, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { PostsService } from './posts.service';
@@ -95,5 +95,21 @@ export class PostsController {
     
     // 서비스의 새로운 메서드 호출
     return this.postsService.findMyPosts(userId); 
+  }
+
+  // 3. 게시물 삭제 API
+  @Delete(':id') // URL 파라미터로 게시물 ID를 받음
+  @UseGuards(JwtAuthGuard) // JWT 인증된 사용자만 접근 가능
+  @ApiBearerAuth('access-token')
+  @HttpCode(204) // 삭제 성공 시 204 No Content 반환 (응답 본문 없음)
+  @ApiOperation({ summary: '본인이 작성한 특정 게시물 삭제' })
+  async deletePost(@Param('id') postId: string, @Req() req) {
+    // JWT 토큰에서 사용자 ID 추출
+    const userId = new Types.ObjectId(req.user._id);
+
+    // 서비스 로직에서 권한 검증 및 삭제 처리
+    await this.postsService.deletePost(postId, userId);
+    
+    // 204 No Content 반환 (body가 빈 응답)
   }
 }
